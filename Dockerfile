@@ -1,19 +1,21 @@
-FROM whisk/java
+FROM debian:jessie
 
-MAINTAINER Viktor Taranenko, viktortnk@gmail.com
+RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys 514A2AD631A57A16DD0047EC749D6EEC0353B12C
 
-RUN apt-get update
-RUN apt-get install -y curl
+RUN echo 'deb http://www.apache.org/dist/cassandra/debian 21x main' >> /etc/apt/sources.list.d/cassandra.list
 
-RUN echo "deb http://debian.datastax.com/community stable main" | tee -a /etc/apt/sources.list.d/datastax.sources.list
-RUN curl -L http://debian.datastax.com/debian/repo_key | apt-key add -
-RUN apt-get update
-RUN apt-get install -y cassandra
+ENV CASSANDRA_VERSION 2.1.8
 
-ADD start.sh /usr/local/bin/cassandra-server
-RUN chmod 755 /usr/local/bin/cassandra-server
+RUN apt-get update \
+	&& apt-get install -y cassandra="$CASSANDRA_VERSION" \
+	&& rm -rf /var/lib/apt/lists/*
 
-EXPOSE 7199 7000 7001 9160 9042
-USER root
-CMD /usr/local/bin/cassandra-server
+ENV CASSANDRA_CONFIG /etc/cassandra
 
+RUN rm -f /etc/security/limits.d/cassandra.conf
+
+EXPOSE 7199 7000 7001 9160 9042 22 8012 61621
+
+COPY start-cassandra.sh /start-cassandra.sh
+
+ENTRYPOINT ["/start-cassandra.sh"]
