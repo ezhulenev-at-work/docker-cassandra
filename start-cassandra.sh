@@ -8,6 +8,8 @@ else SEEDS="$IP"; fi
 # Disable virtual nodes
 sed -i -e "s/num_tokens/\#num_tokens/" $CASSANDRA_CONFIG/cassandra.yaml
 
+sed -i -e "s/^rpc_address.*/rpc_address: $IP/" $CASSANDRA_CONFIG/cassandra.yaml
+sed -i -e "s/# broadcast_rpc_address.*/broadcast_rpc_address: $IP/" $CASSANDRA_CONFIG/cassandra.yaml
 sed -i -e "s/^start_rpc.*/start_rpc: false/" $CASSANDRA_CONFIG/cassandra.yaml
 
 sed -i -e "s/# broadcast_address.*/broadcast_address: $IP/" $CASSANDRA_CONFIG/cassandra.yaml
@@ -26,11 +28,5 @@ echo "JVM_OPTS=\"\$JVM_OPTS -Dcassandra.skip_wait_for_gossip_to_settle=0\"" >> $
 
 # Most likely not needed
 echo "JVM_OPTS=\"\$JVM_OPTS -Djava.rmi.server.hostname=$IP\"" >> $CASSANDRA_CONFIG/cassandra-env.sh
-
-# If configured in $CASSANDRA_DC, set the cassandra datacenter.
-if [ ! -z "$CASSANDRA_DC" ]; then
-    sed -i -e "s/endpoint_snitch: SimpleSnitch/endpoint_snitch: PropertyFileSnitch/" $CASSANDRA_CONFIG/cassandra.yaml
-    echo "default=$CASSANDRA_DC:rac1" > $CASSANDRA_CONFIG/cassandra-topology.properties
-fi
 
 exec cassandra -f
