@@ -5,6 +5,10 @@ IP=`hostname --ip-address`
 if [ $# == 1 ]; then SEEDS="$1,$IP";
 else SEEDS="$IP"; fi
 
+if [ ! -z "$CASSANDRA_CLUSTER_NAME" ]; then
+  sed -i -e "s/^cluster_name.*/cluster_name: $CASSANDRA_CLUSTER_NAME/" $CASSANDRA_CONFIG/cassandra.yaml
+fi
+
 # Disable virtual nodes
 sed -i -e "s/num_tokens/\#num_tokens/" $CASSANDRA_CONFIG/cassandra.yaml
 
